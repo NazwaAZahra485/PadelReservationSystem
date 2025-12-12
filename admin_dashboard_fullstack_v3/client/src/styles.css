@@ -1,0 +1,134 @@
+:root {
+  /* --- PALET WARNA BARU (Biru Cerah & Kuning) --- */
+  
+  /* Dominan: Biru Royal (Bukan Navy Gelap) */
+  --primary-blue: #2563eb;       /* Biru standar yang cerah (Royal Blue) */
+  --primary-hover: #1d4ed8;      /* Biru sedikit lebih tua untuk hover */
+  
+  /* Aksen: Kuning */
+  --accent-yellow: #fbbf24;      /* Kuning Emas Cerah */
+  --accent-bg: #fffbeb;          /* Kuning sangat muda untuk background icon/card */
+
+  /* Background & Teks */
+  --bg-body: #f0f9ff;            /* Biru sangat muda (Hampir putih) */
+  --text-main: #334155;          /* Abu tua (biar kontras baca tulisan) */
+  --white: #ffffff;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: var(--bg-body);
+  color: var(--text-main);
+}
+
+/* --- LAYOUT UTAMA (Agar Sidebar di kiri, Konten di kanan) --- */
+.app-container {
+  display: flex; /* WAJIB: Agar sidebar dan konten bersebelahan */
+  min-height: 100vh;
+}
+
+/* --- SIDEBAR --- */
+.sidebar {
+  width: 260px;
+  background-color: var(--primary-blue); /* Sidebar Biru Cerah */
+  color: var(--white);
+  padding: 20px;
+  flex-shrink: 0; /* Agar sidebar tidak mengecil */
+}
+
+.sidebar h2 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 2rem;
+  color: var(--accent-yellow); /* Logo/Judul warna Kuning */
+  border-bottom: 2px solid rgba(255,255,255,0.2);
+  padding-bottom: 10px;
+}
+
+.nav-link {
+  display: block;
+  padding: 12px 15px;
+  color: #eff6ff;
+  text-decoration: none;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  transition: all 0.3s;
+  font-weight: 500;
+}
+
+.nav-link:hover, .nav-link.active {
+  background-color: var(--accent-yellow); /* Aktif jadi Kuning */
+  color: var(--primary-blue); /* Teks jadi Biru */
+  font-weight: bold;
+}
+
+/* --- KONTEN UTAMA --- */
+.main-content {
+  flex-grow: 1;
+  padding: 30px;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--primary-blue);
+  margin-bottom: 30px;
+}
+
+/* --- GRID SYSTEM (PERBAIKAN TAMPILAN KARTU) --- */
+/* Ini kuncinya agar kartu berjajar 3 ke samping */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Paksa 3 Kolom */
+  gap: 20px; /* Jarak antar kartu */
+  margin-bottom: 40px;
+}
+
+/* Jika layar kecil (HP), jadi 1 kolom otomatis */
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- CARD STYLE --- */
+.card {
+  background: var(--white);
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  border-left: 5px solid var(--accent-yellow); /* Garis kuning di kiri kartu */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Kartu Tengah (Opsional: beda warna sedikit biar estetik) */
+.card.blue-accent {
+  border-left: 5px solid var(--primary-blue);
+}
+
+.card h3 {
+  margin: 0;
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.card .value {
+  font-size: 28px;
+  font-weight: bold;
+  color: var(--text-main);
+}
+
+/* --- CHART CONTAINER --- */
+.chart-container {
+  background: var(--white);
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  height: 400px; /* Tinggi grafik agar proporsional */
+}
