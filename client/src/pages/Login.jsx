@@ -22,15 +22,18 @@ export default function Login() {
         body: JSON.stringify({ email, password }),
       });
 
+      console.log('Login response status:', res.status);
+      
       if (res.ok) {
         const user = await res.json();
+        console.log('Login success:', user);
         // Store token and user info
         localStorage.setItem('token', 'token_' + Date.now());
         localStorage.setItem('user', JSON.stringify({
           id: user.id,
           email: user.email,
           name: user.name,
-          role: user.role
+          role: user.role || 'admin'
         }));
 
         // Redirect based on role
@@ -42,11 +45,13 @@ export default function Login() {
           navigate('/');
         }
       } else {
-        setErrorMsg('Invalid email or password');
+        const errorData = await res.json().catch(() => ({}));
+        console.log('Login error response:', errorData);
+        setErrorMsg(errorData.message || 'Invalid email or password');
       }
     } catch (error) {
-      setErrorMsg('Login failed. Server may be unavailable.');
       console.error('Login error:', error);
+      setErrorMsg('Login failed. Server may be unavailable.');
     } finally {
       setLoading(false);
     }

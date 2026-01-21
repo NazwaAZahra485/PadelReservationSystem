@@ -1,13 +1,9 @@
-# PadelReservationSystem
-Tugas Besar untuk memenuhi matakuliah Pemrograman Terapan dan dikerjakan oleh kelompok Pecinta Koding
+# Admin Dashboard Fullstack - Versi UI+Chart (Pilihan C)
 
-Anggota Kelompok :
-- 2372004 - Thaddeus Clarence Sebagai Product Owner dan Ketua Kelompok
-- 2372046 - Nazwa Assyifa Zahra Sebagai Project Manager
-- 2172040 - Dheandra Halwa Ghassani
-- 2372041 - Axel Hizkia Mapandin
-- 2372042 - M. Rassyad Andhika Yogaswara
+Ini versi upgrade yang menambahkan grafik tren reservasi di dashboard (chart.js + react-chartjs-2).
 
 Instruksi menjalankan:
 - Backend: cd server && npm install && npm run dev
 - Frontend: cd client && npm install && npm run dev
+
+Semua komentar di kode ditulis dalam bahasa Indonesia.

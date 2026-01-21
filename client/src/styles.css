@@ -15,30 +15,11 @@
   --white: #ffffff;
 }
 
-* {
-  box-sizing: border-box;
-}
-
 body {
   margin: 0;
   font-family: 'Segoe UI', sans-serif;
   background-color: var(--bg-body);
   color: var(--text-main);
-}
-
-/* --- LOGIN PAGE LAYOUT --- */
-.login-page {
-  height: 100vh;
-  margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
-  display: grid;
-  justify-items: center;
-  align-items: center;
-  background-color: #3a3a3a;
-}
-
-.login-content {
-  width: 100%;
 }
 
 /* --- LAYOUT UTAMA (Agar Sidebar di kiri, Konten di kanan) --- */
@@ -56,10 +37,9 @@ body {
   flex-shrink: 0; /* Agar sidebar tidak mengecil */
 }
 
-.sidebar-h2 {
+.sidebar h2 {
   font-size: 1.5rem;
   font-weight: bold;
-  text-decoration: none;
   margin-bottom: 2rem;
   color: var(--accent-yellow); /* Logo/Judul warna Kuning */
   border-bottom: 2px solid rgba(255,255,255,0.2);
@@ -80,38 +60,6 @@ body {
 .nav-link:hover, .nav-link.active {
   background-color: var(--accent-yellow); /* Aktif jadi Kuning */
   color: var(--primary-blue); /* Teks jadi Biru */
-  font-weight: bold;
-}
-
-/* Sidebar footer (logout) */
-.sidebar-footer {
-  margin-top: auto;
-  padding-top: 1rem;
-}
-
-/* Make logout visually identical to sidebar links */
-.logout-button {
-  display: block;
-  width: 100%;
-  padding: 12px 15px;
-  margin-bottom: 8px;
-  text-align: left;
-  color: #eff6ff; /* same as .nav-link */
-  background: transparent;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s;
-  font: inherit;
-  font-size: 1rem;
-  line-height: 1.25;
-  font-weight: 500;
-}
-
-.logout-button:hover,
-.logout-button.active {
-  background-color: var(--accent-yellow);
-  color: var(--primary-blue);
   font-weight: bold;
 }
 
@@ -185,54 +133,184 @@ body {
   height: 400px; /* Tinggi grafik agar proporsional */
 }
 
-/* Public sidebar styles */
-.public-sidebar {
-  width: 220px;
-  background: linear-gradient(180deg, #ffffff, #f7f9ff);
-  color: var(--text-main);
-  padding: 18px;
-  border-right: 1px solid #e6eefb;
+/* --- LOGIN PAGE --- */
+.login-page {
+  min-height: 100vh;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #3a3a3a;
+  padding: 2rem;
+}
+
+.login-content {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#main-holder {
+  width: 100%;
+  max-width: 520px;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  padding: 2rem;
   display: flex;
   flex-direction: column;
+  gap: 1rem;
+  align-items: stretch;
 }
-.public-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--primary-blue);
-  text-decoration: none;
+
+#login-header {
+  margin: 0 0 0.25rem 0;
+  text-align: center;
+  font-size: 1.5rem;
 }
-.public-nav {
-  margin-top: 1.25rem;
+
+#login-error-msg-holder {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  justify-content: center;
 }
-.public-link {
-  color: var(--text-main);
-  text-decoration: none;
-  padding: 8px 10px;
+
+#login-error-msg {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #8a0000;
+  border: 1px solid #8a0000;
+  background-color: #f8d7d7;
   border-radius: 6px;
 }
+
+#login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.login-form-field {
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.login-form-field:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+#login-form-submit {
+  padding: 0.75rem;
+  background-color: var(--primary-blue);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+#login-form-submit:hover {
+  background-color: var(--primary-hover);
+}
+
+#login-form-submit:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* --- SIDEBAR FOOTER & LOGOUT --- */
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 2px solid rgba(255,255,255,0.2);
+}
+
+.logout-btn {
+  width: 100%;
+  padding: 12px 15px;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: var(--white);
+  border: 2px solid var(--white);
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.logout-btn:hover {
+  background-color: #dc2626;
+  border-color: #dc2626;
+}
+
+/* --- PUBLIC SIDEBAR --- */
+.public-sidebar {
+  width: 260px;
+  background-color: var(--primary-blue);
+  color: var(--white);
+  padding: 20px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.public-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.public-title {
+  color: var(--accent-yellow);
+  text-decoration: none;
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.public-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex-grow: 1;
+}
+
+.public-link {
+  color: #eff6ff;
+  text-decoration: none;
+  padding: 10px 12px;
+  border-radius: 6px;
+  transition: all 0.3s;
+}
+
 .public-link:hover {
   background-color: var(--accent-yellow);
   color: var(--primary-blue);
-  font-weight: bold;
 }
+
 .public-footer {
-  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 2px solid rgba(255, 255, 255, 0.2);
 }
+
 .public-cta {
-  display: inline-block;
-  padding: 10px 12px;
-  background: var(--primary-blue);
-  color: var(--white);
-  border-radius: 8px;
+  display: block;
+  padding: 12px;
+  background-color: var(--accent-yellow);
+  color: var(--primary-blue);
+  text-align: center;
   text-decoration: none;
-  transition: all 0.2s ease;
+  border-radius: 6px;
+  font-weight: bold;
+  transition: all 0.3s;
 }
 
 .public-cta:hover {
-  background: var(--accent-yellow);
-  color: var(--primary-blue);
-  font-weight: 700;
+  background-color: #fcd34d;
 }

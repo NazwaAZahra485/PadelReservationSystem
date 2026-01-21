@@ -3,7 +3,7 @@ import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
-  PointElement,
+  PointElement,   
   LineElement, // Gunakan Line agar mirip gambar referensi awal Anda
   Title,
   Tooltip,

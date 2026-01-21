@@ -18,9 +18,8 @@ export default function OwnerSidebar() {
   return (
     <div className="sidebar">
       <div className="sidebar-header">
-        <Link to="/owner/dashboard" className="sidebar-h2">
-          Owner Portal
-        </Link>
+        {/* Judul Sidebar */}
+        <h2 style={{ paddingLeft: '15px' }}>Owner</h2>
       </div>
 
       <nav className="nav-menu">
@@ -42,7 +41,7 @@ export default function OwnerSidebar() {
       </nav>
 
       <div className="sidebar-footer">
-        <button className="nav-link logout-button" onClick={handleLogout}>
+        <button onClick={handleLogout} className="logout-btn">
           Logout
         </button>
       </div>

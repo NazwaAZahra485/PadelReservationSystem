@@ -14,8 +14,8 @@ app.use(bodyParser.json());
 
 app.use('/api', routes);
 
-// Sinkronisasi database (untuk development pakai alter true)
-sequelize.sync({ alter: true })
+// Sinkronisasi database (untuk development pakai alter false untuk production)
+sequelize.sync({ alter: false })
   .then(() => {
     console.log('Database terhubung dan disinkronkan');
     app.listen(PORT, () => console.log(`Server berjalan di http://localhost:${PORT}`));
