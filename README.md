@@ -7,3 +7,7 @@ Anggota Kelompok :
 - 2172040 - Dheandra Halwa Ghassani
 - 2372041 - Axel Hizkia Mapandin
 - 2372042 - M. Rassyad Andhika Yogaswara
+
+Instruksi menjalankan:
+- Backend: cd server && npm install && npm run dev
+- Frontend: cd client && npm install && npm run dev
