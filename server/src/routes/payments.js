@@ -2,12 +2,12 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const { Payment, Reservation, User } = require('../models');
+const { Payment, Reservation, User, Court } = require('../models');
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/');
+    cb(null, 'public/uploads/');
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -34,7 +34,7 @@ router.get('/', async (req, res) => {
       include: [
         {
           model: Reservation,
-          include: [User, require('../models').Court]
+          include: [User, Court]
         },
         { model: User, as: 'approver' }
       ]
@@ -60,27 +60,36 @@ router.post('/', upload.single('paymentProof'), async (req, res) => {
     }
 
     const paymentData = {
-      reservationId,
+      reservationId: parseInt(reservationId),
       amount: parseFloat(amount),
       method,
       status: method === 'cash' ? 'approved' : 'pending'
     };
 
     if (req.file) {
-      paymentData.paymentProof = req.file.path;
+      paymentData.paymentProof = req.file.filename;
+    }
+
+    // Virtual Account logic (Dummy)
+    if (method === 'virtual_account') {
+      const vaNumber = '8806' + Math.floor(1000000000 + Math.random() * 9000000000);
+      paymentData.notes = `VA Number: ${vaNumber}`;
     }
 
     const payment = await Payment.create(paymentData);
 
-    // If cash payment, automatically confirm reservation
+    // Update reservation status based on method
     if (method === 'cash') {
       reservation.status = 'confirmed';
       reservation.paymentStatus = 'paid';
-      await reservation.save();
+    } else {
+      reservation.paymentStatus = 'pending_verification';
     }
+    await reservation.save();
 
     res.json(payment);
   } catch (error) {
+    console.error('Error in payment processing:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -130,7 +139,7 @@ router.get('/reservation/:reservationId', async (req, res) => {
     const payment = await Payment.findOne({
       where: { reservationId: req.params.reservationId },
       include: [
-        { model: Reservation, include: [User, require('../models').Court] },
+        { model: Reservation, include: [User, Court] },
         { model: User, as: 'approver' }
       ]
     });

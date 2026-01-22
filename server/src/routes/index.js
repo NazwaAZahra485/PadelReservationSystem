@@ -11,6 +11,8 @@ router.use('/reservations', reservationRoutes);
 router.use('/data', dataRoutes);
 router.use('/applications', require('./applications'));
 router.use('/events', require('./events'));
+router.use('/payments', require('./payments'));
+router.use('/auth', require('./auth'));
 
 // endpoint stats sederhana untuk dashboard
 router.get('/stats', async (req, res) => {

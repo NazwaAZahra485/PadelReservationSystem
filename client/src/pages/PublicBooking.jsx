@@ -7,6 +7,7 @@ export default function PublicBooking() {
     const [courts, setCourts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+    const [step, setStep] = useState('booking'); // booking, payment, success
 
     // Form Data
     const [formData, setFormData] = useState({
@@ -14,14 +15,20 @@ export default function PublicBooking() {
         date: '',
         startTime: '',
         endTime: '',
-        // Data Tamu
         guestName: '',
         guestPhone: '',
         guestEmail: ''
     });
 
+    // Payment State
+    const [reservationId, setReservationId] = useState(null);
+    const [totalAmount, setTotalAmount] = useState(0);
+    const [paymentMethod, setPaymentMethod] = useState('virtual_account');
+    const [paymentProof, setPaymentProof] = useState(null);
+    const [paymentSubmitting, setPaymentSubmitting] = useState(false);
+    const [vaNumber, setVaNumber] = useState('');
+
     const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
 
     useEffect(() => {
         fetchCourts();
@@ -29,8 +36,6 @@ export default function PublicBooking() {
 
     const fetchCourts = async () => {
         try {
-            // Gunakan endpoint public atau endpoint biasa (pastikan tidak diproteksi middleware auth di backend jika belum login)
-            // Di sini kita pakai /courts, asumsikan public read access
             const res = await apiFetch('/courts');
             const data = await res.json();
             setCourts(data);
@@ -51,64 +56,249 @@ export default function PublicBooking() {
         });
     };
 
+    const handleFileChange = (e) => {
+        setPaymentProof(e.target.files[0]);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSubmitting(true);
         setError('');
-        setSuccess('');
 
         try {
-            const payload = {
-                ...formData,
-                status: 'pending'
-            };
-
             const res = await apiFetch('/reservations', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify(formData)
             });
 
+            const data = await res.json();
             if (res.ok) {
-                setSuccess('Permintaan booking berhasil dikirim! Admin kami akan segera menghubungi Anda via WhatsApp/Email untuk konfirmasi.');
-                // Reset form
-                setFormData({
-                    courtId: courts[0]?.id || '',
-                    date: '',
-                    startTime: '',
-                    endTime: '',
-                    guestName: '',
-                    guestPhone: '',
-                    guestEmail: ''
-                });
+                setReservationId(data.id);
+                setTotalAmount(data.totalPrice);
+                setStep('payment');
+                window.scrollTo(0, 0);
             } else {
-                const json = await res.json();
-                setError(json.message || 'Gagal membuat reservasi');
+                setError(data.message || 'Gagal membuat reservasi');
             }
         } catch (err) {
             setError('Terjadi kesalahan sistem. Silakan coba lagi.');
-            console.error(err);
         } finally {
             setSubmitting(false);
         }
     };
 
+    const handlePaymentSubmit = async (e) => {
+        e.preventDefault();
+        setPaymentSubmitting(true);
+        setError('');
+
+        try {
+            const paymentFormData = new FormData();
+            paymentFormData.append('reservationId', reservationId);
+            paymentFormData.append('method', paymentMethod);
+            paymentFormData.append('amount', totalAmount);
+            if (paymentProof) {
+                paymentFormData.append('paymentProof', paymentProof);
+            }
+
+            const res = await apiFetch('/payments', {
+                method: 'POST',
+                body: paymentFormData
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                if (paymentMethod === 'virtual_account') {
+                    const vaMatch = data.notes?.match(/VA Number: (\d+)/);
+                    if (vaMatch) setVaNumber(vaMatch[1]);
+                }
+                setStep('success');
+                window.scrollTo(0, 0);
+            } else {
+                setError(data.error || 'Gagal memproses pembayaran');
+            }
+        } catch (err) {
+            setError('Terjadi kesalahan saat mengirim pembayaran.');
+        } finally {
+            setPaymentSubmitting(false);
+        }
+    };
+
     if (loading) return <div className="loading-container"><div className="loading-spinner"></div></div>;
+
+    if (step === 'payment') {
+        return (
+            <div className="reservation-page">
+                <div className="reservation-container">
+                    <div className="reservation-header">
+                        <h1>💳 Pembayaran</h1>
+                        <p>Silakan selesaikan pembayaran untuk mengonfirmasi booking Anda</p>
+                    </div>
+
+                    {error && <div className="alert alert-error">{error}</div>}
+
+                    <div className="payment-summary-card">
+                        <h3>Ringkasan Pesanan</h3>
+                        <div className="summary-grid">
+                            <div className="summary-col">
+                                <label>ID Reservasi</label>
+                                <span>#{reservationId}</span>
+                            </div>
+                            <div className="summary-col">
+                                <label>Total Bayar</label>
+                                <span className="total-price">Rp {parseInt(totalAmount).toLocaleString()}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form onSubmit={handlePaymentSubmit}>
+                        <div className="form-group">
+                            <label>Pilih Metode Pembayaran</label>
+                            <div className="payment-methods">
+                                <div
+                                    className={`method-option ${paymentMethod === 'virtual_account' ? 'selected' : ''}`}
+                                    onClick={() => setPaymentMethod('virtual_account')}
+                                >
+                                    <div className="method-card">
+                                        <span className="method-icon">🏦</span>
+                                        <span className="method-name">Virtual Account</span>
+                                    </div>
+                                </div>
+                                <div
+                                    className={`method-option ${paymentMethod === 'transfer' ? 'selected' : ''}`}
+                                    onClick={() => setPaymentMethod('transfer')}
+                                >
+                                    <div className="method-card">
+                                        <span className="method-icon">💸</span>
+                                        <span className="method-name">Transfer Bank</span>
+                                    </div>
+                                </div>
+                                <div
+                                    className={`method-option ${paymentMethod === 'cash' ? 'selected' : ''}`}
+                                    onClick={() => setPaymentMethod('cash')}
+                                >
+                                    <div className="method-card">
+                                        <span className="method-icon">💵</span>
+                                        <span className="method-name">Bayar di Tempat</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {paymentMethod === 'virtual_account' && (
+                            <div className="va-instructions">
+                                <div className="va-info">
+                                    <p>Gunakan nomor Virtual Account berikut untuk pembayaran otomatis:</p>
+                                    <div className="va-card">
+                                        <div className="va-label">BANK MANDIRI / BNI / BRI</div>
+                                        <div className="va-number">8806 0812 3456 7890</div>
+                                        <div className="va-label">A/N PADEL RESERVATION</div>
+                                    </div>
+                                </div>
+                                <p className="note" style={{ fontSize: '0.85rem', color: '#64748b' }}>
+                                    * Pembayaran via Virtual Account akan diverifikasi secara otomatis.
+                                </p>
+                            </div>
+                        )}
+
+                        {paymentMethod === 'transfer' && (
+                            <div className="transfer-instructions">
+                                <div className="bank-info">
+                                    <p>Silakan transfer ke rekening berikut:</p>
+                                    <div className="bank-card">
+                                        <div className="account-name">BANK BCA</div>
+                                        <div className="account-number">123-456-7890</div>
+                                        <div className="account-name">A/N PT PADEL INDONESIA</div>
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label>Upload Bukti Transfer</label>
+                                    <div className="file-upload-wrapper">
+                                        <input
+                                            type="file"
+                                            id="paymentProof"
+                                            onChange={handleFileChange}
+                                            className="file-input"
+                                            accept="image/*"
+                                            required={paymentMethod === 'transfer'}
+                                        />
+                                        <label htmlFor="paymentProof" className="file-label">
+                                            {paymentProof ? `📄 ${paymentProof.name}` : '📁 Pilih Foto Bukti Transfer'}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {paymentMethod === 'cash' && (
+                            <div className="cash-instructions">
+                                <p>Anda dapat membayar langsung di kasir saat tiba di lokasi.</p>
+                                <p className="note">Mohon datang 15 menit sebelum jadwal bermain.</p>
+                            </div>
+                        )}
+
+                        <div className="payment-actions">
+                            <button type="button" className="btn-back" onClick={() => setStep('booking')}>Kembali</button>
+                            <button type="submit" className="btn-submit" disabled={paymentSubmitting}>
+                                {paymentSubmitting ? 'Memproses...' : 'Konfirmasi Pembayaran'}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        );
+    }
+
+    if (step === 'success') {
+        return (
+            <div className="reservation-page">
+                <div className="reservation-container success-view">
+                    <div className="success-icon">✅</div>
+                    <h1>Booking Berhasil!</h1>
+                    <p>Terima kasih telah melakukan pemesanan di Padel Reservation System.</p>
+
+                    <div className="booking-summary">
+                        <div className="summary-item">
+                            <span>ID Reservasi:</span>
+                            <strong>#{reservationId}</strong>
+                        </div>
+                        <div className="summary-item">
+                            <span>Metode:</span>
+                            <strong>{paymentMethod.replace('_', ' ').toUpperCase()}</strong>
+                        </div>
+                        {vaNumber && (
+                            <div className="summary-item">
+                                <span>Nomor VA:</span>
+                                <strong>{vaNumber}</strong>
+                            </div>
+                        )}
+                        <div className="summary-item">
+                            <span>Status:</span>
+                            <strong>{paymentMethod === 'cash' ? 'Dikonfirmasi' : 'Menunggu Verifikasi'}</strong>
+                        </div>
+                    </div>
+
+                    <p style={{ marginBottom: '30px', color: '#64748b' }}>
+                        Detail reservasi telah dikirim ke WhatsApp/Email Anda. Silakan tunjukkan ID Reservasi saat tiba di lokasi.
+                    </p>
+
+                    <button className="btn-submit" onClick={() => navigate('/')}>Kembali ke Beranda</button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="reservation-page">
             <div className="reservation-container">
                 <div className="reservation-header">
-                    <h1>📅 Booking Lapangan (Public)</h1>
+                    <h1>📅 Booking Lapangan</h1>
                     <p>Isi data diri dan pilih jadwal bermain Anda</p>
                 </div>
 
                 {error && <div className="alert alert-error">{error}</div>}
-                {success && <div className="alert alert-success">{success}</div>}
 
                 <form onSubmit={handleSubmit} className="reservation-form">
-
-                    {/* BAGIAN 1: PILIH LAPANGAN */}
                     <div className="form-group">
                         <label>1. Pilih Lapangan</label>
                         <div className="court-selection">
@@ -133,7 +323,6 @@ export default function PublicBooking() {
                         </div>
                     </div>
 
-                    {/* BAGIAN 2: JADWAL */}
                     <div className="form-section">
                         <label style={{ fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '15px', display: 'block', color: '#2563eb' }}>2. Pilih Jadwal</label>
                         <div className="form-row">
@@ -173,10 +362,8 @@ export default function PublicBooking() {
                         </div>
                     </div>
 
-                    {/* BAGIAN 3: DATA DIRI */}
                     <div className="form-section">
                         <label style={{ fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '15px', display: 'block', color: '#2563eb' }}>3. Data Pemesan</label>
-
                         <div className="form-group">
                             <label>Nama Lengkap</label>
                             <input
@@ -218,7 +405,7 @@ export default function PublicBooking() {
                     </div>
 
                     <button type="submit" className="btn-submit" disabled={submitting}>
-                        {submitting ? 'Memproses...' : 'Kirim Booking'}
+                        {submitting ? 'Memproses...' : 'Lanjut ke Pembayaran'}
                     </button>
                 </form>
             </div>

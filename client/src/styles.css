@@ -2037,3 +2037,252 @@ body {
   font-weight: 600;
   cursor: pointer;
 }
+
+/* --- PAYMENT STYLES --- */
+.payment-summary-card {
+  background: #f1f5f9;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 30px;
+  border-left: 6px solid var(--primary-blue);
+}
+
+.payment-summary-card h3 {
+  margin: 0 0 16px 0;
+  font-size: 1.1rem;
+  color: var(--text-main);
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 20px;
+}
+
+.summary-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.summary-col label {
+  font-size: 0.8rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summary-col span {
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.summary-col .total-price {
+  color: var(--primary-blue);
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.payment-methods {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.method-option {
+  cursor: pointer;
+}
+
+.method-card {
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 15px;
+  text-align: center;
+  transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.method-option:hover .method-card {
+  border-color: #cbd5e1;
+  transform: translateY(-2px);
+}
+
+.method-option.selected .method-card {
+  background: #eff6ff;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.method-icon {
+  font-size: 1.8rem;
+}
+
+.method-name {
+  font-weight: 600;
+  color: var(--text-main);
+  font-size: 0.9rem;
+}
+
+.transfer-instructions,
+.va-instructions {
+  background: #fff;
+  border: 2px dashed #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 25px;
+}
+
+.bank-info,
+.va-info {
+  margin-bottom: 20px;
+}
+
+.bank-card,
+.va-card {
+  background: linear-gradient(135deg, #1e40af, #3b82f6);
+  color: white;
+  padding: 20px;
+  border-radius: 12px;
+  margin-top: 10px;
+  box-shadow: 0 4px 12px rgba(30, 64, 175, 0.2);
+}
+
+.account-number,
+.va-number {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  margin: 10px 0;
+}
+
+.account-name,
+.va-label {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.file-upload-wrapper {
+  position: relative;
+}
+
+.file-input {
+  position: absolute;
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  z-index: -1;
+}
+
+.file-label {
+  display: block;
+  padding: 14px;
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: 500;
+}
+
+.file-label:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.cash-instructions {
+  background: #fffbeb;
+  border: 2px solid #fef3c7;
+  padding: 20px;
+  border-radius: 16px;
+  margin-bottom: 25px;
+}
+
+.cash-instructions p {
+  margin: 0 0 10px 0;
+  color: #92400e;
+}
+
+.cash-instructions .note {
+  font-size: 0.85rem;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+.payment-actions {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 15px;
+}
+
+.btn-back {
+  padding: 16px;
+  background: #f1f5f9;
+  color: #64748b;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-back:hover {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+/* --- SUCCESS VIEW --- */
+.success-view {
+  text-align: center;
+  padding: 60px 40px;
+}
+
+.success-icon {
+  font-size: 5rem;
+  margin-bottom: 20px;
+  animation: scaleUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes scaleUp {
+  from {
+    transform: scale(0);
+  }
+
+  to {
+    transform: scale(1);
+  }
+}
+
+.booking-summary {
+  background: #f8fafc;
+  border-radius: 16px;
+  padding: 24px;
+  margin: 30px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.summary-item span {
+  color: #64748b;
+}
+
+.summary-item strong {
+  color: var(--text-main);
+  font-size: 1.1rem;
+}

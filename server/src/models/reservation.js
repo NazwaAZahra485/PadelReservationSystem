@@ -9,8 +9,9 @@ module.exports = (sequelize, DataTypes) => {
     guestName: { type: DataTypes.STRING, allowNull: true },
     guestEmail: { type: DataTypes.STRING, allowNull: true },
     guestPhone: { type: DataTypes.STRING, allowNull: true },
-    // Total harga (opsional, bagus untuk dicatat)
-    totalPrice: { type: DataTypes.DECIMAL(10, 2), allowNull: true }
+    // Total harga
+    totalPrice: { type: DataTypes.DECIMAL(10, 2), allowNull: true },
+    paymentStatus: { type: DataTypes.STRING, defaultValue: 'unpaid' }
   }, {
     tableName: 'reservations'
   });

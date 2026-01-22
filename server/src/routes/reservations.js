@@ -23,10 +23,24 @@ router.post('/', async (req, res) => {
   }
 
   try {
+    // Hitung total harga jika courtId ada
+    let totalPrice = 0;
+    if (courtId) {
+      const court = await Court.findByPk(courtId);
+      if (court) {
+        const start = parseInt(startTime.split(':')[0]);
+        const end = parseInt(endTime.split(':')[0]);
+        const hours = end - start;
+        totalPrice = hours * court.price;
+      }
+    }
+
     const r = await Reservation.create({
       date, startTime, endTime, userId, courtId,
       guestName, guestEmail, guestPhone,
-      status: 'pending'
+      status: 'pending',
+      totalPrice,
+      paymentStatus: 'unpaid'
     });
     res.json(r);
   } catch (err) {
