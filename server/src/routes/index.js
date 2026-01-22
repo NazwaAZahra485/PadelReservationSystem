@@ -3,10 +3,16 @@ const router = express.Router();
 const userRoutes = require('./users');
 const courtRoutes = require('./courts');
 const reservationRoutes = require('./reservations');
+const venueAppealRoutes = require('./venueAppeals');
+const paymentRoutes = require('./payments');
+const eventRoutes = require('./events');
 
 router.use('/users', userRoutes);
 router.use('/courts', courtRoutes);
 router.use('/reservations', reservationRoutes);
+router.use('/venue-appeals', venueAppealRoutes);
+router.use('/payments', paymentRoutes);
+router.use('/events', eventRoutes);
 
 // endpoint stats sederhana untuk dashboard
 router.get('/stats', async (req, res) => {

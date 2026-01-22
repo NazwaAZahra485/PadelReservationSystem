@@ -140,7 +140,7 @@ export default function Applications() {
         
         <input 
           type="text" 
-          placeholder="🔍 Cari nama / lapangan..." 
+          placeholder=" Cari nama / lapangan..." 
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           style={{
@@ -225,7 +225,6 @@ export default function Applications() {
         </div>
       </div>
 
-      {/* --- MODAL DETAIL --- */}
       {showDetailModal && selectedApp && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,

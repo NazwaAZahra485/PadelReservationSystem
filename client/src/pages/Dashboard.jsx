@@ -4,15 +4,15 @@ import {
   CategoryScale,
   LinearScale,
   PointElement,   
-  LineElement, // Gunakan Line agar mirip gambar referensi awal Anda
+  LineElement, 
   Title,
   Tooltip,
   Legend,
   Filler
 } from 'chart.js';
-import { Line } from 'react-chartjs-2'; // Ganti ke Line Chart
+import { Line } from 'react-chartjs-2';
 
-// Registrasi komponen Chart
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -25,24 +25,24 @@ ChartJS.register(
 );
 
 const Dashboard = () => {
-  // Data Chart: Biru Cerah & Kuning
+
   const data = {
     labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'],
     datasets: [
       {
         label: 'Tren Reservasi',
-        data: [7, 8, 6, 10, 9, 12, 7], // Data dummy mirip kurva di gambar Anda
-        borderColor: '#2563eb',       // Garis Biru Cerah
+        data: [7, 8, 6, 10, 9, 12, 7], 
+        borderColor: '#2563eb',       
         backgroundColor: (context) => {
           const ctx = context.chart.ctx;
           const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-          gradient.addColorStop(0, 'rgba(250, 204, 21, 0.5)'); // Kuning transparan atas
-          gradient.addColorStop(1, 'rgba(250, 204, 21, 0.0)'); // Putih bawah
+          gradient.addColorStop(0, 'rgba(250, 204, 21, 0.5)'); 
+          gradient.addColorStop(1, 'rgba(250, 204, 21, 0.0)'); 
           return gradient;
         },
-        fill: true, // Isi area bawah grafik
-        tension: 0.4, // Membuat garis melengkung halus (curved)
-        pointBackgroundColor: '#fbbf24', // Titik warna kuning
+        fill: true, 
+        tension: 0.4, 
+        pointBackgroundColor: '#fbbf24',
         pointBorderColor: '#fff',
         pointBorderWidth: 2,
         pointRadius: 5,
@@ -54,7 +54,7 @@ const Dashboard = () => {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { display: false }, // Sembunyikan legend biar bersih kayak gambar
+      legend: { display: false }, 
       title: {
         display: true,
         text: 'Tren Reservasi (7 hari)',

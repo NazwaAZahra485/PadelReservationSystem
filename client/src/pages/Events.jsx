@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 
 // --- KOMPONEN KECIL: CARD EVENT DENGAN CAROUSEL ---
-const EventCard = ({ event, onEdit, onDelete }) => {
+const EventCard = ({ event, onEdit, onDelete, onView, userRole, currentUser }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   // Pastikan images adalah array
@@ -85,7 +86,7 @@ const EventCard = ({ event, onEdit, onDelete }) => {
           backgroundColor: '#fbbf24', color: '#0f172a',
           fontWeight: 'bold', boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
         }}>
-          📅 {formatDate(event.date)}
+           {formatDate(event.date)}
         </span>
       </div>
 
@@ -94,7 +95,7 @@ const EventCard = ({ event, onEdit, onDelete }) => {
         <h3 style={{ fontSize: '1.25rem', color: '#1e293b', marginBottom: '5px' }}>{event.title}</h3>
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '10px', color: '#64748b', fontSize: '0.9rem' }}>
-          <span>📍</span> {event.location || 'Lokasi belum diatur'}
+          <span></span> {event.location || 'Lokasi belum diatur'}
         </div>
 
         <p style={{ color: '#475569', fontSize: '0.9rem', lineHeight: '1.5', marginBottom: '15px', flex: 1 }}>
@@ -102,8 +103,14 @@ const EventCard = ({ event, onEdit, onDelete }) => {
         </p>
 
         <div style={{ display: 'flex', gap: '10px', marginTop: 'auto' }}>
-          <button onClick={() => onEdit(event)} style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', background: 'white', color: '#334155', cursor: 'pointer', fontWeight: '600' }}>Edit</button>
-          <button onClick={() => onDelete(event.id)} style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #fecaca', background: '#fef2f2', color: '#dc2626', cursor: 'pointer', fontWeight: '600' }}>Hapus</button>
+          {(userRole === 'admin' || (userRole === 'owner' && event.ownerId === currentUser?.id)) ? (
+            <>
+              <button onClick={() => onEdit(event)} style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', background: 'white', color: '#334155', cursor: 'pointer', fontWeight: '600' }}>Edit</button>
+              <button onClick={() => onDelete(event.id)} style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #fecaca', background: '#fef2f2', color: '#dc2626', cursor: 'pointer', fontWeight: '600' }}>Hapus</button>
+            </>
+          ) : (
+            <button onClick={() => onView(event)} style={{ flex: 1, padding: '10px', borderRadius: '6px', border: 'none', background: '#2563eb', color: 'white', cursor: 'pointer', fontWeight: '600' }}>View Details</button>
+          )}
         </div>
       </div>
     </div>
@@ -111,11 +118,22 @@ const EventCard = ({ event, onEdit, onDelete }) => {
 };
 
 
-// --- KOMPONEN UTAMA HALAMAN EVENTS ---
 export default function Events() {
+  const location = useLocation();
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentUser, setCurrentUser] = useState(null);
+
+  // Determine page mode based on route
+  const getPageMode = () => {
+    if (location.pathname === '/events') return 'public';
+    if (location.pathname === '/admin/events') return 'admin';
+    if (location.pathname === '/owner/events') return 'owner';
+    return 'public'; // default
+  };
+
+  const pageMode = getPageMode();
 
   // State Modal
   const [showModal, setShowModal] = useState(false);
@@ -131,10 +149,22 @@ export default function Events() {
   // Preview File Upload
   const [previewFiles, setPreviewFiles] = useState([]); 
 
-  // 1. READ DATA
   useEffect(() => {
     fetchEvents();
+    getCurrentUser();
   }, []);
+
+  const getCurrentUser = () => {
+    const userRaw = localStorage.getItem('user');
+    if (userRaw) {
+      try {
+        const user = JSON.parse(userRaw);
+        setCurrentUser(user);
+      } catch (e) {
+        console.error('Error parsing user data:', e);
+      }
+    }
+  };
 
   const fetchEvents = () => {
     axios.get("http://localhost:4000/api/events")
@@ -143,7 +173,7 @@ export default function Events() {
         setIsLoading(false);
       })
       .catch(err => {
-        // DATA DUMMY JIKA BACKEND MATI
+
         setEvents([
           { 
             id: 1, title: 'Turnamen Padel Nasional 2024', date: '2024-05-15', 
@@ -162,7 +192,6 @@ export default function Events() {
       });
   };
 
-  // --- LOGIC UPLOAD FILE (Sama persis dengan Courts) ---
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     
@@ -222,7 +251,6 @@ export default function Events() {
         });
       })
       .catch(() => {
-        // FALLBACK DEMO
         if(isEditing) {
             setEvents(events.map(e => e.id === currentId ? { ...e, ...dataToSave } : e));
         } else {
@@ -237,36 +265,41 @@ export default function Events() {
     setShowModal(false);
   };
 
-  const handleDelete = (id) => {
+  const handleView = (event) => {
+    // For now, just show event details in an alert
     Swal.fire({
-      title: 'Hapus Event?', icon: 'warning', showCancelButton: true,
-      confirmButtonColor: '#ef4444', confirmButtonText: 'Hapus', cancelButtonText: 'Batal'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        axios.delete(`http://localhost:4000/api/events/${id}`)
-          .then(() => fetchEvents())
-          .catch(() => {
-            setEvents(events.filter(e => e.id !== id));
-            Swal.fire('Terhapus!', 'Event telah dihapus.', 'success');
-          });
-      }
-    })
+      title: event.title,
+      html: `
+        <div style="text-align: left;">
+          <p><strong>Date:</strong> ${new Date(event.date).toLocaleDateString('id-ID')}</p>
+          <p><strong>Location:</strong> ${event.location || 'Not specified'}</p>
+          <p><strong>Description:</strong> ${event.description || 'No description'}</p>
+        </div>
+      `,
+      confirmButtonText: 'Close'
+    });
   };
 
   return (
     <div className="p-4">
       {/* HEADER & SEARCH */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', flexWrap: 'wrap', gap: '15px' }}>
-        <h1 className="page-title" style={{ margin: 0 }}>Management Event</h1>
+        <h1 className="page-title" style={{ margin: 0 }}>
+          {pageMode === 'admin' ? 'Management Event' : 
+           pageMode === 'owner' ? 'My Events' : 
+           'Upcoming Events'}
+        </h1>
         <div style={{ display: 'flex', gap: '10px' }}>
           <input 
-            type="text" placeholder="🔍 Cari event..." 
+            type="text" placeholder=" Cari event..." 
             value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
             style={{ padding: '10px 15px', borderRadius: '8px', border: '1px solid #cbd5e1', width: '250px', outline: 'none' }}
           />
-          <button onClick={openAddModal} style={{ backgroundColor: '#fbbf24', color: '#0f172a', padding: '10px 20px', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-            + Tambah Event
-          </button>
+          {pageMode === 'admin' && (
+            <button onClick={openAddModal} style={{ backgroundColor: '#fbbf24', color: '#0f172a', padding: '10px 20px', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              + Tambah Event
+            </button>
+          )}
         </div>
       </div>
 
@@ -279,7 +312,10 @@ export default function Events() {
               key={event.id} 
               event={event} 
               onEdit={openEditModal} 
-              onDelete={handleDelete} 
+              onDelete={handleDelete}
+              onView={handleView}
+              userRole={pageMode === 'public' ? '' : pageMode}
+              currentUser={currentUser}
             />
         ))}
       </div>

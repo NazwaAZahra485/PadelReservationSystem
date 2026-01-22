@@ -30,18 +30,28 @@ const Sidebar = () => {
         </Link>
         
         {/* 2. Management Lapangan */}
-        <Link to="/courts" className={`nav-link ${isActive('/courts')}`}>
+        <Link to="/admin/courts" className={`nav-link ${isActive('/admin/courts')}`}>
           Management Lapangan
         </Link>
         
         {/* 3. Management Event */}
-        <Link to="/events" className={`nav-link ${isActive('/events')}`}>
+        <Link to="/admin/events" className={`nav-link ${isActive('/admin/events')}`}>
           Management Event
         </Link>
         
         {/* 4. Pengajuan Owner */}
         <Link to="/applications" className={`nav-link ${isActive('/applications')}`}>
           Pengajuan Owner
+        </Link>
+
+        {/* 4.5. Pengajuan Venue */}
+        <Link to="/venue-appeals" className={`nav-link ${isActive('/venue-appeals')}`}>
+          Pengajuan Venue
+        </Link>
+
+        {/* 4.6. Payment Management */}
+        <Link to="/payments" className={`nav-link ${isActive('/payments')}`}>
+          Payment Management
         </Link>
 
         {/* --- MENU BARU: LAPORAN --- */}

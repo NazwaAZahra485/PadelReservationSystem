@@ -10,8 +10,8 @@ export default function PublicSidebar() {
 
       <nav className="public-nav">
         <Link to="/" className="public-link">Home</Link>
-        <Link to="/public" className="public-link">Courts</Link>
-        <Link to="/public" className="public-link">Events</Link>
+        <Link to="/courts" className="public-link">Courts</Link>
+        <Link to="/events" className="public-link">Events</Link>
         <Link to="/public" className="public-link">Contact</Link>
       </nav>
 

@@ -12,6 +12,9 @@ const PORT = process.env.PORT || 4000;
 app.use(cors());
 app.use(bodyParser.json());
 
+// Serve static files from uploads directory
+app.use('/uploads', express.static('uploads'));
+
 app.use('/api', routes);
 
 // Sinkronisasi database (untuk development pakai alter false untuk production)

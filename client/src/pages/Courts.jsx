@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 
-// --- KOMPONEN KECIL: CARD DENGAN CAROUSEL ---
-// Kita pisahkan ini agar setiap card punya state slider sendiri-sendiri
-const CourtCard = ({ court, onEdit, onDelete }) => {
+const CourtCard = ({ court, onEdit, onDelete, onBook, userRole, currentUser }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // Pastikan images adalah array, jika tidak (data lama), jadikan array
   const images = Array.isArray(court.images) && court.images.length > 0 
     ? court.images 
     : ['https://via.placeholder.com/400x200?text=No+Image'];
@@ -23,7 +21,6 @@ const CourtCard = ({ court, onEdit, onDelete }) => {
   return (
     <div className="card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative' }}>
       
-      {/* BAGIAN GAMBAR / CAROUSEL */}
       <div style={{ position: 'relative', height: '200px', backgroundColor: '#e2e8f0' }}>
         <img 
           src={images[currentSlide]} 
@@ -32,7 +29,6 @@ const CourtCard = ({ court, onEdit, onDelete }) => {
           onError={(e) => { e.target.src = 'https://via.placeholder.com/400x200?text=Error'; }} 
         />
         
-        {/* Tombol Panah (Hanya muncul jika gambar > 1) */}
         {images.length > 1 && (
           <>
             <button 
@@ -56,7 +52,6 @@ const CourtCard = ({ court, onEdit, onDelete }) => {
               &#8250;
             </button>
             
-            {/* Indikator Titik (Dots) */}
             <div style={{ position: 'absolute', bottom: '10px', left: '0', right: '0', display: 'flex', justifyContent: 'center', gap: '5px' }}>
               {images.map((_, idx) => (
                 <div 
@@ -72,7 +67,6 @@ const CourtCard = ({ court, onEdit, onDelete }) => {
           </>
         )}
 
-        {/* Badge Tipe */}
         <span style={{ 
           position: 'absolute', top: '10px', right: '10px', 
           fontSize: '12px', padding: '6px 12px', borderRadius: '20px',
@@ -84,13 +78,18 @@ const CourtCard = ({ court, onEdit, onDelete }) => {
         </span>
       </div>
 
-      {/* BAGIAN KONTEN */}
       <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
         <h3 style={{ fontSize: '1.25rem', color: '#1e293b', marginBottom: '5px' }}>{court.name}</h3>
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '10px', color: '#64748b', fontSize: '0.9rem' }}>
-          <span>📍</span> {court.location || 'Lokasi tidak tersedia'}
+          <span></span> {court.location || 'Lokasi tidak tersedia'}
         </div>
+
+        {court.owner && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '10px', color: '#059669', fontSize: '0.9rem' }}>
+            <span></span> Owner: {court.owner.name}
+          </div>
+        )}
 
         <p style={{ color: '#475569', fontSize: '0.9rem', lineHeight: '1.5', marginBottom: '15px', flex: 1 }}>
           {court.description || 'Tidak ada deskripsi.'}
@@ -100,21 +99,69 @@ const CourtCard = ({ court, onEdit, onDelete }) => {
           Rp {parseInt(court.price).toLocaleString('id-ID')} <span style={{ fontSize: '0.8rem', fontWeight: 'normal', color: '#94a3b8' }}>/ Jam</span>
         </div>
 
+        {court.maintenance && (
+          <div style={{
+            backgroundColor: '#fef2f2',
+            color: '#dc2626',
+            padding: '8px 12px',
+            borderRadius: '6px',
+            fontSize: '0.9rem',
+            fontWeight: '600',
+            marginBottom: '15px',
+            textAlign: 'center',
+            border: '1px solid #fecaca'
+          }}>
+            🔧 Under Maintenance - Not Available for Booking
+          </div>
+        )}
+
         <div style={{ display: 'flex', gap: '10px' }}>
-          <button onClick={() => onEdit(court)} style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', background: 'white', color: '#334155', cursor: 'pointer', fontWeight: '600' }}>Edit</button>
-          <button onClick={() => onDelete(court.id)} style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #fecaca', background: '#fef2f2', color: '#dc2626', cursor: 'pointer', fontWeight: '600' }}>Hapus</button>
+          {(userRole === 'admin' || (userRole === 'owner' && court.ownerId === currentUser?.id)) ? (
+            <>
+              <button onClick={() => onEdit(court)} style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', background: 'white', color: '#334155', cursor: 'pointer', fontWeight: '600' }}>Edit</button>
+              <button onClick={() => onDelete(court.id)} style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #fecaca', background: '#fef2f2', color: '#dc2626', cursor: 'pointer', fontWeight: '600' }}>Hapus</button>
+            </>
+          ) : (
+            <button 
+              onClick={() => onBook(court)} 
+              disabled={court.maintenance}
+              style={{ 
+                flex: 1, 
+                padding: '10px', 
+                borderRadius: '6px', 
+                border: 'none', 
+                background: court.maintenance ? '#cbd5e1' : '#2563eb', 
+                color: court.maintenance ? '#64748b' : 'white', 
+                cursor: court.maintenance ? 'not-allowed' : 'pointer', 
+                fontWeight: '600' 
+              }}
+            >
+              {court.maintenance ? 'Under Maintenance' : 'Book Now'}
+            </button>
+          )}
         </div>
       </div>
     </div>
   );
 };
 
-
-// --- KOMPONEN UTAMA ---
 export default function Courts() {
+  const location = useLocation();
   const [courts, setCourts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [owners, setOwners] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  // Determine page mode based on route
+  const getPageMode = () => {
+    if (location.pathname === '/courts') return 'public';
+    if (location.pathname === '/admin/courts') return 'admin';
+    if (location.pathname === '/owner/courts') return 'owner';
+    return 'public';
+  };
+
+  const pageMode = getPageMode();
 
   // State Modal
   const [showModal, setShowModal] = useState(false);
@@ -124,16 +171,48 @@ export default function Courts() {
   // Data Form
   const [formData, setFormData] = useState({
     name: '', type: 'Indoor', price: '', location: '', description: '',
-    images: [] // Array untuk menyimpan URL gambar
+    images: [], 
+    maintenance: false, 
+    ownerId: '' 
   });
   
-  // State khusus untuk preview file yang baru diupload
   const [previewFiles, setPreviewFiles] = useState([]); 
 
   // 1. READ DATA
   useEffect(() => {
     fetchCourts();
+    fetchOwners();
+    getCurrentUser();
   }, []);
+
+  const getCurrentUser = () => {
+    const userRaw = localStorage.getItem('user');
+    if (userRaw) {
+      try {
+        const user = JSON.parse(userRaw);
+        setCurrentUser(user);
+      } catch (e) {
+        console.error('Error parsing user data:', e);
+      }
+    }
+  };
+
+  const fetchOwners = () => {
+    axios.get("http://localhost:4000/api/users")
+      .then(res => {
+       
+        const ownerUsers = res.data.filter(user => user.role === 'owner');
+        setOwners(ownerUsers);
+      })
+      .catch(err => {
+        console.error('Error fetching owners:', err);
+        
+        setOwners([
+          { id: 1, name: 'John Owner', email: 'john@example.com', role: 'owner' },
+          { id: 2, name: 'Jane Owner', email: 'jane@example.com', role: 'owner' }
+        ]);
+      });
+  };
 
   const fetchCourts = () => {
     axios.get("http://localhost:4000/api/courts")
@@ -167,25 +246,18 @@ export default function Courts() {
       });
   };
 
-  // --- LOGIC UPLOAD FILE ---
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     
-    // Batasi maks 5 file
     if (files.length > 5) {
       alert("Maksimal upload 5 foto!");
       return;
     }
 
-    // Buat URL Preview sementara (blob:http://...)
-    // Ini agar gambar bisa tampil di frontend tanpa harus upload ke server beneran dulu
     const newPreviewUrls = files.map(file => URL.createObjectURL(file));
-    
-    // Simpan ke state
+
     setPreviewFiles(newPreviewUrls);
     
-    // Simpan juga ke formData (biasanya di sini kita simpan File object untuk dikirim ke backend)
-    // Tapi untuk demo Frontend-only, kita simpan URL preview-nya saja agar bisa disimpan di state 'courts'
     setFormData({ ...formData, images: newPreviewUrls });
   };
 
@@ -196,20 +268,24 @@ export default function Courts() {
   const openAddModal = () => {
     setIsEditing(false);
     setPreviewFiles([]); // Reset preview
-    setFormData({ name: '', type: 'Indoor', price: '', location: '', description: '', images: [] });
+    setFormData({ 
+      name: '', type: 'Indoor', price: '', location: '', description: '', 
+      images: [], maintenance: false, ownerId: '' 
+    });
     setShowModal(true);
   };
 
   const openEditModal = (court) => {
     setIsEditing(true);
     setCurrentId(court.id);
-    setPreviewFiles([]); // Reset preview baru
-    // Pastikan images ada array
+    setPreviewFiles([]);
     const existingImages = Array.isArray(court.images) ? court.images : [];
     setFormData({ 
       name: court.name, type: court.type, price: court.price,
       location: court.location || '', description: court.description || '', 
-      images: existingImages
+      images: existingImages,
+      maintenance: court.maintenance || false,
+      ownerId: court.ownerId || court.owner?.id || ''
     });
     setShowModal(true);
   };
@@ -253,6 +329,11 @@ export default function Courts() {
     setShowModal(false);
   };
 
+  const handleBook = (court) => {
+    // Navigate to booking page with selected court
+    window.location.href = `/booking?court=${court.id}`;
+  };
+
   const handleDelete = (id) => {
     Swal.fire({
       title: 'Hapus lapangan?', icon: 'warning', showCancelButton: true,
@@ -271,37 +352,42 @@ export default function Courts() {
 
   return (
     <div className="p-4">
-      {/* HEADER & SEARCH */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', flexWrap: 'wrap', gap: '15px' }}>
-        <h1 className="page-title" style={{ margin: 0 }}>Management Lapangan</h1>
+        <h1 className="page-title" style={{ margin: 0 }}>
+          {pageMode === 'admin' ? 'Management Lapangan' : 
+           pageMode === 'owner' ? 'My Courts' : 
+           'Available Courts'}
+        </h1>
         <div style={{ display: 'flex', gap: '10px' }}>
           <input 
-            type="text" placeholder="🔍 Cari nama..." 
+            type="text" placeholder=" Cari nama..." 
             value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
             style={{ padding: '10px 15px', borderRadius: '8px', border: '1px solid #cbd5e1', width: '250px', outline: 'none' }}
           />
-          <button onClick={openAddModal} style={{ backgroundColor: '#fbbf24', color: '#0f172a', padding: '10px 20px', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-            + Tambah
-          </button>
+          {pageMode === 'admin' && (
+            <button onClick={openAddModal} style={{ backgroundColor: '#fbbf24', color: '#0f172a', padding: '10px 20px', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              + Tambah
+            </button>
+          )}
         </div>
       </div>
 
-      {/* LIST CARD */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '25px' }}>
         {courts
           .filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase()))
           .map((court) => (
-            // Panggil Component CourtCard
             <CourtCard 
               key={court.id} 
               court={court} 
               onEdit={openEditModal} 
-              onDelete={handleDelete} 
+              onDelete={handleDelete}
+              onBook={handleBook}
+              userRole={pageMode === 'public' ? '' : pageMode}
+              currentUser={currentUser}
             />
         ))}
       </div>
 
-      {/* --- MODAL FORM --- */}
       {showModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999 }}>
           <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', width: '500px', maxHeight: '90vh', overflowY: 'auto' }}>
@@ -313,18 +399,16 @@ export default function Courts() {
                 <input type="text" name="name" required value={formData.name} onChange={handleChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
               </div>
 
-              {/* INPUT FILE UPLOAD */}
               <div>
                 <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600', fontSize: '0.9rem' }}>Upload Foto (Max 5)</label>
                 <input 
                   type="file" 
                   multiple 
-                  accept="image/*" // Hanya terima file gambar
+                  accept="image/*" 
                   onChange={handleFileChange}
                   style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#f8fafc' }} 
                 />
                 
-                {/* PREVIEW GAMBAR KECIL DI FORM */}
                 {formData.images.length > 0 && (
                   <div style={{ display: 'flex', gap: '5px', marginTop: '10px', overflowX: 'auto' }}>
                     {formData.images.map((img, idx) => (
@@ -356,6 +440,44 @@ export default function Courts() {
                 <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Deskripsi</label>
                 <textarea name="description" rows="3" value={formData.description} onChange={handleChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
               </div>
+
+              <div>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    name="maintenance"
+                    checked={formData.maintenance}
+                    onChange={(e) => setFormData({ ...formData, maintenance: e.target.checked })}
+                    style={{ width: '16px', height: '16px' }}
+                  />
+                  Under Maintenance
+                </label>
+                <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '4px' }}>
+                  If checked, this court cannot be reserved by customers.
+                </p>
+              </div>
+
+              {currentUser && currentUser.role === 'admin' && (
+                <div>
+                  <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Assign to Owner</label>
+                  <select 
+                    name="ownerId" 
+                    value={formData.ownerId} 
+                    onChange={handleChange} 
+                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                  >
+                    <option value="">Select Owner (Optional)</option>
+                    {owners.map(owner => (
+                      <option key={owner.id} value={owner.id}>
+                        {owner.name} ({owner.email})
+                      </option>
+                    ))}
+                  </select>
+                  <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '4px' }}>
+                    Assign this court to a specific owner. Leave empty for admin-only management.
+                  </p>
+                </div>
+              )}
 
               <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                 <button type="button" onClick={() => setShowModal(false)} style={{ flex: 1, padding: '12px', background: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' }}>Batal</button>

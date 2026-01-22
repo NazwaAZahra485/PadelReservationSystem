@@ -28,10 +28,19 @@ db.User = require('./user')(sequelize, Sequelize);
 db.Court = require('./court')(sequelize, Sequelize);
 db.Reservation = require('./reservation')(sequelize, Sequelize);
 db.Event = require('./event')(sequelize, Sequelize);
+db.VenueAppeal = require('./venueAppeal')(sequelize, Sequelize);
+db.Payment = require('./payment')(sequelize, Sequelize);
 
 db.User.hasMany(db.Reservation, { foreignKey: 'userId' });
 db.Reservation.belongsTo(db.User, { foreignKey: 'userId' });
 db.Court.hasMany(db.Reservation, { foreignKey: 'courtId' });
 db.Reservation.belongsTo(db.Court, { foreignKey: 'courtId' });
+db.Reservation.hasOne(db.Payment, { foreignKey: 'reservationId' });
+db.Payment.belongsTo(db.Reservation, { foreignKey: 'reservationId' });
+db.Payment.belongsTo(db.User, { foreignKey: 'approvedBy', as: 'approver' });
+db.Court.belongsTo(db.User, { foreignKey: 'ownerId', as: 'owner' });
+db.User.hasMany(db.Court, { foreignKey: 'ownerId' });
+db.Event.belongsTo(db.User, { foreignKey: 'ownerId', as: 'owner' });
+db.User.hasMany(db.Event, { foreignKey: 'ownerId' });
 
 module.exports = db;
