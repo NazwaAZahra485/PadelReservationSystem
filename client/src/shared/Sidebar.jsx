@@ -4,8 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  
-  // Helper: Jika path cocok, beri class 'active' (warna kuning)
+
   const isActive = (path) => {
     return location.pathname === path ? 'active' : '';
   };
@@ -16,67 +15,53 @@ const Sidebar = () => {
     navigate('/login');
   };
 
+  const navItems = [
+    { path: '/dashboard', icon: '📊', label: 'Dashboard' },
+    { path: '/courts', icon: '🏟️', label: 'Lapangan' },
+    { path: '/events', icon: '🎉', label: 'Events' },
+    { path: '/applications', icon: '📝', label: 'Pengajuan' },
+    { path: '/reports', icon: '📈', label: 'Laporan' },
+    { path: '/users', icon: '👥', label: 'Users' },
+    { path: '/database', icon: '💾', label: 'Database' },
+    { path: '/settings', icon: '⚙️', label: 'Settings' },
+  ];
+
   return (
-    <div className="sidebar">
-      <div className="sidebar-header">
-        {/* Judul Sidebar */}
-        <h2 style={{ paddingLeft: '15px' }}>Admin</h2>
+    <aside className="public-sidebar"> {/* Menggunakan class public-sidebar agar style sama */}
+      <div className="public-header">
+        <div className="public-brand">
+          <div className="brand-icon" style={{ background: 'linear-gradient(135deg, #ef4444, #b91c1c)' }}>🛡️</div>
+          <div className="brand-text">
+            <span className="brand-name">Admin Panel</span>
+            <span className="brand-tagline">Management System</span>
+          </div>
+        </div>
       </div>
-      
-      <nav className="nav-menu">
-        {/* 1. Dashboard */}
-        <Link to="/dashboard" className={`nav-link ${isActive('/dashboard')}`}>
-          Dashboard
-        </Link>
-        
-        {/* 2. Management Lapangan */}
-        <Link to="/admin/courts" className={`nav-link ${isActive('/admin/courts')}`}>
-          Management Lapangan
-        </Link>
-        
-        {/* 3. Management Event */}
-        <Link to="/admin/events" className={`nav-link ${isActive('/admin/events')}`}>
-          Management Event
-        </Link>
-        
-        {/* 4. Pengajuan Owner */}
-        <Link to="/applications" className={`nav-link ${isActive('/applications')}`}>
-          Pengajuan Owner
-        </Link>
 
-        {/* 4.5. Pengajuan Venue */}
-        <Link to="/venue-appeals" className={`nav-link ${isActive('/venue-appeals')}`}>
-          Pengajuan Venue
-        </Link>
-
-        {/* 4.6. Payment Management */}
-        <Link to="/payments" className={`nav-link ${isActive('/payments')}`}>
-          Payment Management
-        </Link>
-
-        {/* --- MENU BARU: LAPORAN --- */}
-        <Link to="/reports" className={`nav-link ${isActive('/reports')}`}>
-          Laporan
-        </Link>
-
-        {/* 5. User Management */}
-        <Link to="/users" className={`nav-link ${isActive('/users')}`}>
-          User Management
-        </Link>
-        
-        {/* 6. Settings */}
-        <Link to="/settings" className={`nav-link ${isActive('/settings')}`}>
-          Settings
-        </Link>
+      <nav className="public-nav">
+        <div className="nav-section">
+          <span className="nav-section-title">Main Menu</span>
+          {navItems.map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`public-link ${isActive(item.path)}`}
+            >
+              <span className="link-icon">{item.icon}</span>
+              <span className="link-text">{item.label}</span>
+              {isActive(item.path) && <span className="active-indicator"></span>}
+            </Link>
+          ))}
+        </div>
       </nav>
 
-      {/* Logout Button */}
-      <div className="sidebar-footer">
-        <button onClick={handleLogout} className="logout-btn">
-          Logout
+      <div className="public-footer">
+        <button onClick={handleLogout} className="public-cta" style={{ width: '100%', border: 'none', cursor: 'pointer', background: 'rgba(255,255,255,0.1)', color: 'white' }}>
+          <span className="cta-icon">🚪</span>
+          <span className="cta-text">Logout</span>
         </button>
       </div>
-    </div>
+    </aside>
   );
 };
 

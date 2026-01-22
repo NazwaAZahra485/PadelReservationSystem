@@ -4,16 +4,15 @@ module.exports = (sequelize, DataTypes) => {
     date: { type: DataTypes.DATEONLY, allowNull: false },
     startTime: { type: DataTypes.STRING, allowNull: false },
     endTime: { type: DataTypes.STRING, allowNull: false },
-    status: { type: DataTypes.ENUM('pending', 'confirmed', 'cancelled'), defaultValue: 'pending' },
-    paymentRequired: { type: DataTypes.BOOLEAN, defaultValue: true },
-    paymentStatus: { type: DataTypes.ENUM('unpaid', 'paid', 'refunded'), defaultValue: 'unpaid' }
+    status: { type: DataTypes.STRING, defaultValue: 'pending' },
+    // Field untuk Guest (User tanpa login)
+    guestName: { type: DataTypes.STRING, allowNull: true },
+    guestEmail: { type: DataTypes.STRING, allowNull: true },
+    guestPhone: { type: DataTypes.STRING, allowNull: true },
+    // Total harga (opsional, bagus untuk dicatat)
+    totalPrice: { type: DataTypes.DECIMAL(10, 2), allowNull: true }
   }, {
     tableName: 'reservations'
   });
-
-  Reservation.associate = (models) => {
-    Reservation.hasOne(models.Payment, { foreignKey: 'reservationId' });
-  };
-
   return Reservation;
 };

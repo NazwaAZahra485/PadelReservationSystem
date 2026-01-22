@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 
 export default function OwnerDashboard() {
   return (
@@ -23,20 +22,7 @@ export default function OwnerDashboard() {
       <section style={{ marginTop: 30, marginBottom: 30 }}>
         <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '16px' }}>Appeal New Venue</h2>
         <div className="card">
-          <p style={{ color: '#666', marginBottom: '16px' }}>Request to add a new venue to the system. Admin will review your appeal.</p>
-          <Link to="/owner/venue-appeal">
-            <button style={{
-              backgroundColor: 'var(--primary-blue)',
-              color: 'white',
-              padding: '10px 20px',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '16px'
-            }}>
-              Appeal for New Venue
-            </button>
-          </Link>
+          <p style={{ color: '#999' }}>Venue appeal form coming soon...</p>
         </div>
       </section>
 

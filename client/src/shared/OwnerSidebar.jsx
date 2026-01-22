@@ -27,8 +27,8 @@ export default function OwnerSidebar() {
           Dashboard
         </Link>
 
-        <Link to="/owner/courts" className={`nav-link ${isActive('/owner/courts')}`}>
-          My Courts
+        <Link to="/owner/venues" className={`nav-link ${isActive('/owner/venues')}`}>
+          My Venues
         </Link>
 
         <Link to="/owner/events" className={`nav-link ${isActive('/owner/events')}`}>

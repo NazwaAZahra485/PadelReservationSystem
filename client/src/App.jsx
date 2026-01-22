@@ -15,47 +15,81 @@ import Users from './pages/Users';
 import Settings from './pages/Settings';
 import Reports from './pages/Reports';
 import OwnerDashboard from './pages/OwnerDashboard';
-import VenueAppealForm from './pages/VenueAppealForm';
-import VenueAppeals from './pages/VenueAppeals';
-import Booking from './pages/Booking';
-import Payments from './pages/Payments';
+import DatabaseViewer from './pages/DatabaseViewer';
+import Reservation from './pages/Reservation';
+import PublicBooking from './pages/PublicBooking';
+import CourtsPublic from './pages/CourtsPublic';
+import EventsPublic from './pages/EventsPublic';
+import CustomerSidebar from './shared/CustomerSidebar';
 import './styles.css';
 
 function App() {
   const location = useLocation();
+
+  // Helper untuk cek role user dari localStorage
+  const getUserRole = () => {
+    const userStr = localStorage.getItem('user');
+    if (!userStr) return null;
+    try {
+      const user = JSON.parse(userStr);
+      return user.role;
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const role = getUserRole();
   const isLoginPage = location.pathname === '/login';
-  const isPublicPage = location.pathname === '/' || location.pathname === '/public' || location.pathname === '/courts' || location.pathname === '/events' || location.pathname === '/booking';
-  const isOwnerPage = location.pathname.startsWith('/owner/');
+  const isPublicPage = location.pathname === '/' || location.pathname === '/public' || location.pathname === '/courts-public' || location.pathname === '/events-public' || location.pathname === '/contact' || location.pathname === '/booking';
+
+  // Logika Sidebar:
+  // 1. Jika Login Page -> Tidak ada sidebar
+  // 2. Jika Public Page -> PublicSidebar
+  // 3. Jika Role Customer -> CustomerSidebar
+  // 4. Jika Role Owner -> OwnerSidebar
+  // 5. Default (Admin) -> Sidebar (Admin Sidebar)
+
+  let SidebarComponent;
+  if (isLoginPage) {
+    SidebarComponent = null;
+  } else if (isPublicPage) {
+    SidebarComponent = PublicSidebar;
+  } else if (role === 'customer') {
+    SidebarComponent = CustomerSidebar;
+  } else if (role === 'owner') {
+    SidebarComponent = OwnerSidebar;
+  } else {
+    SidebarComponent = Sidebar; // Default Admin
+  }
 
   return (
     <div className={isLoginPage ? 'login-page' : 'app-container'}>
-      {!isLoginPage && (isPublicPage ? <PublicSidebar /> : isOwnerPage ? <OwnerSidebar /> : <Sidebar />)}
+      {SidebarComponent && <SidebarComponent />}
       <div className={isLoginPage ? 'login-content' : 'main-content'}>
         <Routes>
           {/* Public Route */}
           <Route path="/" element={<PublicDashboard />} />
           <Route path="/login" element={<Login />} />
           <Route path="/public" element={<PublicDashboard />} />
-          <Route path="/courts" element={<Courts />} />
-          <Route path="/events" element={<Events />} />
-          <Route path="/booking" element={<Booking />} />
+          <Route path="/booking" element={<PublicBooking />} />
+          <Route path="/courts-public" element={<CourtsPublic />} />
+          <Route path="/events-public" element={<EventsPublic />} />
+
+          {/* Customer Routes (Protected) */}
+          <Route path="/reservation" element={<RequireAuth role="customer"><Reservation /></RequireAuth>} />
 
           {/* Admin Routes (Protected) */}
           <Route path="/dashboard" element={<RequireAuth role="admin"><Dashboard /></RequireAuth>} />
-          <Route path="/admin/courts" element={<RequireAuth role="admin"><Courts /></RequireAuth>} />
-          <Route path="/admin/events" element={<RequireAuth role="admin"><Events /></RequireAuth>} />
+          <Route path="/courts" element={<RequireAuth role="admin"><Courts /></RequireAuth>} />
+          <Route path="/events" element={<RequireAuth role="admin"><Events /></RequireAuth>} />
           <Route path="/applications" element={<RequireAuth role="admin"><Applications /></RequireAuth>} />
-          <Route path="/venue-appeals" element={<RequireAuth role="admin"><VenueAppeals /></RequireAuth>} />
-          <Route path="/payments" element={<RequireAuth role="admin"><Payments /></RequireAuth>} />
           <Route path="/reports" element={<RequireAuth role="admin"><Reports /></RequireAuth>} />
           <Route path="/users" element={<RequireAuth role="admin"><Users /></RequireAuth>} />
+          <Route path="/database" element={<RequireAuth role="admin"><DatabaseViewer /></RequireAuth>} />
           <Route path="/settings" element={<RequireAuth role="admin"><Settings /></RequireAuth>} />
 
           {/* Owner Routes (Protected) */}
           <Route path="/owner/dashboard" element={<RequireAuth role="owner"><OwnerDashboard /></RequireAuth>} />
-          <Route path="/owner/courts" element={<RequireAuth role="owner"><Courts /></RequireAuth>} />
-          <Route path="/owner/events" element={<RequireAuth role="owner"><Events /></RequireAuth>} />
-          <Route path="/owner/venue-appeal" element={<RequireAuth role="owner"><VenueAppealForm /></RequireAuth>} />
         </Routes>
       </div>
     </div>

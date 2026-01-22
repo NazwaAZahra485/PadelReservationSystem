@@ -1,97 +1,87 @@
 const express = require('express');
 const router = express.Router();
 const { Event } = require('../models');
+const upload = require('../middleware/upload');
 
 router.get('/', async (req, res) => {
-  try {
-    // Get user from token/session (simplified for now)
-    const userRole = req.user?.role || 'customer';
-    const userId = req.user?.id;
-
-    let whereClause = {};
-    if (userRole === 'owner') {
-      // Owners only see events assigned to them
-      whereClause.ownerId = userId;
+    try {
+        const events = await Event.findAll();
+        res.json(events);
+    } catch (err) {
+        res.status(500).json({ message: 'Error fetching events' });
     }
-    // Admins see all events
-
-    const events = await Event.findAll({
-      where: whereClause,
-      include: [{ model: require('../models').User, as: 'owner', attributes: ['name', 'email'] }]
-    });
-    res.json(events);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
 });
 
-router.post('/', async (req, res) => {
-  try {
-    const { title, description, date, startTime, endTime, location, maxParticipants, ownerId } = req.body;
-    const event = await Event.create({
-      title,
-      description,
-      date,
-      startTime,
-      endTime,
-      location,
-      maxParticipants,
-      ownerId
-    });
-    res.json(event);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+router.get('/:id', async (req, res) => {
+    try {
+        const event = await Event.findByPk(req.params.id);
+        if (!event) return res.status(404).json({ message: 'Event not found' });
+        res.json(event);
+    } catch (err) {
+        res.status(500).json({ message: 'Error fetching event' });
+    }
 });
 
-router.put('/:id', async (req, res) => {
-  try {
-    const userRole = req.user?.role;
-    const userId = req.user?.id;
+router.post('/', upload.array('images', 5), async (req, res) => {
+    try {
+        const { title, description, date, location } = req.body;
+        let imagePaths = [];
+        if (req.files && req.files.length > 0) {
+            imagePaths = req.files.map(file => `/uploads/${file.filename}`);
+        }
 
-    const event = await Event.findByPk(req.params.id);
-    if (!event) return res.status(404).json({ error: 'Event not found' });
-
-    // Check permissions: owners can only edit their assigned events, admins can edit any
-    if (userRole === 'owner' && event.ownerId !== userId) {
-      return res.status(403).json({ error: 'You can only edit events assigned to you' });
+        const event = await Event.create({
+            title,
+            description,
+            date,
+            location,
+            images: imagePaths
+        });
+        res.json(event);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error creating event' });
     }
+});
 
-    const { title, description, date, startTime, endTime, location, maxParticipants, ownerId } = req.body;
-    await event.update({
-      title,
-      description,
-      date,
-      startTime,
-      endTime,
-      location,
-      maxParticipants,
-      ownerId
-    });
-    res.json(event);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+router.put('/:id', upload.array('images', 5), async (req, res) => {
+    try {
+        const { title, description, date, location, existingImages } = req.body;
+        const event = await Event.findByPk(req.params.id);
+        if (!event) return res.status(404).json({ message: 'Event not found' });
+
+        let finalImages = [];
+        if (existingImages) {
+            finalImages = Array.isArray(existingImages) ? existingImages : [existingImages];
+        }
+        if (req.files && req.files.length > 0) {
+            const newImagePaths = req.files.map(file => `/uploads/${file.filename}`);
+            finalImages = [...finalImages, ...newImagePaths];
+        }
+
+        await event.update({
+            title,
+            description,
+            date,
+            location,
+            images: finalImages
+        });
+        res.json(event);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error updating event' });
+    }
 });
 
 router.delete('/:id', async (req, res) => {
-  try {
-    const userRole = req.user?.role;
-    const userId = req.user?.id;
-
-    const event = await Event.findByPk(req.params.id);
-    if (!event) return res.status(404).json({ error: 'Event not found' });
-
-    // Check permissions: owners can only delete their assigned events, admins can delete any
-    if (userRole === 'owner' && event.ownerId !== userId) {
-      return res.status(403).json({ error: 'You can only delete events assigned to you' });
+    try {
+        const event = await Event.findByPk(req.params.id);
+        if (!event) return res.status(404).json({ message: 'Event not found' });
+        await event.destroy();
+        res.json({ message: 'Event deleted' });
+    } catch (err) {
+        res.status(500).json({ message: 'Error deleting event' });
     }
-
-    await event.destroy();
-    res.json({ message: 'Event deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
 });
 
 module.exports = router;

@@ -8,8 +8,8 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
-  const { name, email, role } = req.body;
-  const user = await User.create({ name, email, role });
+  const { name, email, role, password } = req.body;
+  const user = await User.create({ name, email, role, password });
   res.json(user);
 });
 
@@ -17,10 +17,10 @@ router.post('/', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    
+
     // Cari user by email
     const user = await User.findOne({ where: { email } });
-    
+
     if (!user) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
